@@ -41,6 +41,10 @@ Debate App is a web application built using Flask that allows users to engage in
 |:--------------------------------------:|:---------------------------------:|
 | AI v/s user Page                            | MultiUser Page                           |
 
+| ![Dashboard](images/dashboard_page.jpeg) | 
+#### Dashboard
+
+
 ## Setup Instructions
 
 ### Prerequisites
