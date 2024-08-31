@@ -10,6 +10,7 @@ import json
 import plotly
 import plotly.graph_objs as go
 import numpy as np
+import datetime
 import logging  # Add this line
 
 # Set up logging
@@ -27,6 +28,7 @@ db_config = {
     'password': os.environ.get('DB_PASSWORD'),
     'port': os.environ.get('DB_PORT')
 }
+
 
 # Database Connection
 def get_db_connection():
@@ -49,6 +51,56 @@ Your response:
 )
 
 debate_chain = LLMChain(llm=llm, prompt=debate_prompt)
+def initialize_database():
+    try:
+        with get_db_connection() as conn:
+            with conn.cursor() as cursor:
+                # Create users table
+                cursor.execute("""
+                    CREATE TABLE IF NOT EXISTS users (
+                        id SERIAL PRIMARY KEY,
+                        username VARCHAR(150) UNIQUE NOT NULL,
+                        password VARCHAR(255) NOT NULL
+                    )
+                """)
+                print("Users table is ready.")
+
+                # Create debate_scores table
+                cursor.execute("""
+                    CREATE TABLE IF NOT EXISTS debate_scores (
+                        id SERIAL PRIMARY KEY,
+                        username VARCHAR(255) NOT NULL,
+                        average_fact_score FLOAT NOT NULL,
+                        average_argument_score FLOAT NOT NULL,
+                        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+                    )
+                """)
+                print("Debate scores table is ready.")
+
+                # Add columns if they do not exist
+                cursor.execute("""
+                    DO $$
+                    BEGIN
+                        IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='debate_scores' AND column_name='plot_json') THEN
+                            ALTER TABLE debate_scores ADD COLUMN plot_json TEXT;
+                        END IF;
+                        
+                        IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='debate_scores' AND column_name='user_scores') THEN
+                            ALTER TABLE debate_scores ADD COLUMN user_scores FLOAT[];
+                        END IF;
+                        
+                        IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='debate_scores' AND column_name='ai_scores') THEN
+                            ALTER TABLE debate_scores ADD COLUMN ai_scores FLOAT[];
+                        END IF;
+                    END
+                    $$;
+                """)
+                print("Columns have been added or verified.")
+
+                conn.commit()
+                print("Database tables and columns have been created or verified.")
+    except psycopg2.Error as e:
+        print(f"An error occurred while initializing the database: {e.pgerror}")
 
 # Routes
 @app.route('/')
@@ -129,47 +181,52 @@ def dashboard():
 
     username = session['username']
     
-    try:
-        with get_db_connection() as conn:
-            with conn.cursor() as cursor:
-                cursor.execute("""
-                    SELECT user_scores, ai_scores, created_at, plot_json
-                    FROM debate_scores 
-                    WHERE username = %s 
-                    ORDER BY created_at DESC
-                    LIMIT 1
-                """, (username,))
-                latest_score = cursor.fetchone()
+    # Generate mock scores for demonstration
+    user_scores = [float(np.random.uniform(0, 10)) for _ in range(5)]
+    ai_scores = [float(np.random.uniform(0, 10)) for _ in range(5)]
+    
+    # Calculate average scores
+    avg_user_score = sum(user_scores) / len(user_scores)
+    avg_ai_score = sum(ai_scores) / len(ai_scores)
+    
+    # Calculate win rate (assuming a score > 5 is a win)
+    user_wins = sum(1 for score in user_scores if score > 5)
+    win_rate = (user_wins / len(user_scores)) * 100
 
-                if latest_score:
-                    user_scores, ai_scores, created_at, plot_json = latest_score
-                    
-                    # Handle potential None values
-                    user_scores = user_scores if user_scores is not None else []
-                    ai_scores = ai_scores if ai_scores is not None else []
-                    
-                    # Calculate average scores
-                    avg_user_score = sum(user_scores) / len(user_scores) if user_scores else 0
-                    avg_ai_score = sum(ai_scores) / len(ai_scores) if ai_scores else 0
-                    
-                    # Calculate win rate (assuming a score > 5 is a win)
-                    user_wins = sum(1 for score in user_scores if score > 5)
-                    win_rate = (user_wins / len(user_scores)) * 100 if user_scores else 0
+    # Generate scatter plot
+    fig = go.Figure()
+    
+    fig.add_trace(go.Scatter(
+        x=list(range(1, len(user_scores) + 1)),
+        y=user_scores,
+        mode='markers',
+        name='User Scores',
+        marker=dict(size=10, color='blue', symbol='circle')
+    ))
+    
+    fig.add_trace(go.Scatter(
+        x=list(range(1, len(ai_scores) + 1)),
+        y=ai_scores,
+        mode='markers',
+        name='AI Scores',
+        marker=dict(size=10, color='red', symbol='diamond')
+    ))
+    
+    fig.update_layout(
+        title='Debate Scores: User vs AI',
+        xaxis_title='Turn',
+        yaxis_title='Score',
+        yaxis=dict(range=[0, 10])
+    )
+    
+    plot_json = json.dumps(fig, cls=plotly.utils.PlotlyJSONEncoder)
 
-                    return render_template('dashboard.html', 
-                                           username=username,
-                                           avg_user_score=avg_user_score,
-                                           avg_ai_score=avg_ai_score,
-                                           win_rate=win_rate,
-                                           plot_json=plot_json,
-                                           debate_date=created_at)
-                else:
-                    flash('No debate data available yet.')
-                    return render_template('dashboard.html', username=username)
-
-    except psycopg2.Error as e:
-        flash(f"An error occurred while fetching debate scores: {e.pgerror}")
-        return render_template('dashboard.html', username=username)
+    return render_template('dashboard.html', 
+                           username=username,
+                           avg_user_score=avg_user_score,
+                           avg_ai_score=avg_ai_score,
+                           win_rate=win_rate,
+                           plot_json=plot_json)
 
     
 @app.route('/delete_account', methods=['POST'])
@@ -311,4 +368,5 @@ def multi_user():
         return redirect(url_for('register'))
 
 if __name__ == '__main__':
+    initialize_database()
     app.run(debug=True)

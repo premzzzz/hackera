@@ -1,0 +1,53 @@
+version: "3.8" # The version is obsolete but included for reference
+
+services:
+  web:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "5000:5000"
+    volumes:
+      - .:/app
+    environment:
+      - DB_USER=docker
+      - DB_PASSWORD=docker
+      - DB_NAME=docker
+      - DB_HOST=docker
+      - DB_PORT=5432
+      - SECRET_KEY=your_secret_key # Set your secret key
+    networks:
+      - app-network
+    depends_on:
+      - ollama-service
+      - postgres # Ensure the database service is also included
+
+  ollama-service:
+    image: ollama/ollama:latest
+    container_name: ollama-service
+    ports:
+      - "11434:11434"
+    volumes:
+      - ollama:/root/.ollama
+    networks:
+      - app-network
+
+  postgres: # Add a PostgreSQL service for your database
+    image: postgres:13
+    container_name: postgres
+    environment:
+      POSTGRES_USER: docker
+      POSTGRES_PASSWORD: docker
+      POSTGRES_DB: docker
+    ports:
+      - "5432:5432"
+    networks:
+      - app-network
+
+networks:
+  app-network:
+    driver: bridge
+
+volumes:
+  ollama:
+    driver: local

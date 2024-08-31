@@ -10,7 +10,6 @@
                 <p class="mb-2">Average User Score: <span class="font-bold">{{ avg_user_score|round(2) }}</span></p>
                 <p class="mb-2">Average AI Score: <span class="font-bold">{{ avg_ai_score|round(2) }}</span></p>
                 <p class="mb-2">Win Rate: <span class="font-bold">{{ win_rate|round(2) }}%</span></p>
-                <p class="mb-2">Debate Date: <span class="font-bold">{{ debate_date.strftime('%Y-%m-%d %H:%M:%S') }}</span></p>
             {% else %}
                 <p>No debate data available yet.</p>
             {% endif %}

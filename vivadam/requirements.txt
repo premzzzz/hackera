@@ -1,0 +1,7 @@
+Flask
+psycopg2-binary
+werkzeug
+langchain
+langchain-community
+plotly
+numpy
