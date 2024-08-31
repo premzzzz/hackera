@@ -1,36 +1,81 @@
 {% extends "base.html" %}
-
 {% block title %}Multi-User Debate - AI Debate Platform{% endblock %}
-
 {% block content %}
 <div class="bg-gray-800 p-8 rounded-lg shadow-lg">
     <h2 class="text-3xl font-bold mb-6 text-blue-400">Multi-User Debate</h2>
-    <div class="mb-8">
-        <h3 class="text-2xl font-bold mb-4 text-green-400">Topic: The Future of Education</h3>
-        <p class="text-gray-300 mb-4">Discuss and debate how education systems should evolve in the coming decades.</p>
-    </div>
-    <div class="space-y-6">
-        <div class="bg-gray-700 p-4 rounded-lg">
-            <p class="font-bold text-yellow-400">User1:</p>
-            <p>I believe that the future of education lies in personalized learning experiences powered by AI. This approach can adapt to each student's needs and pace, maximizing their potential.</p>
-        </div>
-        <div class="bg-gray-700 p-4 rounded-lg">
-            <p class="font-bold text-purple-400">User2:</p>
-            <p>While AI-powered personalization has its merits, we shouldn't overlook the importance of human interaction in education. A balanced approach combining technology and traditional teaching methods might be more effective.</p>
-        </div>
-        <div class="bg-gray-700 p-4 rounded-lg">
-            <p class="font-bold text-green-400">You:</p>
-            <textarea class="w-full bg-gray-600 text-white p-2 rounded-md" rows="4" placeholder="Type your response here..."></textarea>
-        </div>
-    </div>
-    <div class="mt-6 text-right">
-        <button class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded transition duration-300">
-            Submit Response
+
+    <!-- Topic Selection Form -->
+    <form id="topicForm" class="mb-8">
+        <label for="debateTopic" class="block text-white mb-2">Enter Debate Topic:</label>
+        <input type="text" id="debateTopic" name="debateTopic" class="w-full bg-gray-700 text-white p-2 rounded-md mb-2" required>
+        <button type="submit" class="bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-4 rounded transition duration-300">
+            Start Debate
         </button>
-    </div>
-    <div class="mt-8 bg-gray-700 p-4 rounded-lg">
-        <h4 class="text-xl font-bold mb-2 text-blue-400">AI Moderator Evaluation</h4>
-        <p>The debate is progressing well, with both sides presenting valid arguments. User1 emphasizes the potential of AI in personalized learning, while User2 highlights the importance of human interaction. Consider addressing how these two approaches might be integrated for optimal results.</p>
+    </form>
+
+    <!-- Debate Area (initially hidden) -->
+    <div id="debateArea" class="hidden">
+        <h3 id="topicDisplay" class="text-2xl font-bold mb-4 text-green-400"></h3>
+        
+        <div class="flex space-x-4">
+            <!-- User1 Side -->
+            <div class="w-1/2 space-y-4">
+                <h4 class="text-xl font-bold text-yellow-400">User1</h4>
+                <div id="user1Messages" class="space-y-2"></div>
+                <textarea id="user1Input" class="w-full bg-gray-700 text-white p-2 rounded-md" rows="4" placeholder="User1, type your response here..."></textarea>
+                <button onclick="submitMessage('user1')" class="bg-yellow-600 hover:bg-yellow-700 text-white font-bold py-2 px-4 rounded transition duration-300">
+                    Submit Response
+                </button>
+            </div>
+
+            <!-- User2 Side -->
+            <div class="w-1/2 space-y-4">
+                <h4 class="text-xl font-bold text-purple-400">User2</h4>
+                <div id="user2Messages" class="space-y-2"></div>
+                <textarea id="user2Input" class="w-full bg-gray-700 text-white p-2 rounded-md" rows="4" placeholder="User2, type your response here..."></textarea>
+                <button onclick="submitMessage('user2')" class="bg-purple-600 hover:bg-purple-700 text-white font-bold py-2 px-4 rounded transition duration-300">
+                    Submit Response
+                </button>
+            </div>
+        </div>
+
+        <!-- AI Moderator Evaluation -->
+        <div class="mt-8 bg-gray-700 p-4 rounded-lg">
+            <h4 class="text-xl font-bold mb-2 text-blue-400">AI Moderator Evaluation</h4>
+            <p id="aiEvaluation">The debate will be evaluated here as it progresses.</p>
+        </div>
     </div>
 </div>
+
+<script>
+    document.getElementById('topicForm').addEventListener('submit', function(e) {
+        e.preventDefault();
+        var topic = document.getElementById('debateTopic').value;
+        document.getElementById('topicDisplay').textContent = "Topic: " + topic;
+        document.getElementById('debateArea').classList.remove('hidden');
+        this.classList.add('hidden');
+    });
+
+    function submitMessage(user) {
+        var input = document.getElementById(user + 'Input');
+        var message = input.value.trim();
+        if (message) {
+            var messagesDiv = document.getElementById(user + 'Messages');
+            var newMessage = document.createElement('div');
+            newMessage.className = 'bg-gray-700 p-2 rounded-lg';
+            newMessage.textContent = message;
+            messagesDiv.appendChild(newMessage);
+            input.value = '';
+            
+            // Here you would typically send this message to the server
+            // and get an updated AI evaluation
+            updateAIEvaluation();
+        }
+    }
+
+    function updateAIEvaluation() {
+        // This is a placeholder. In a real application, you'd fetch the evaluation from the server
+        document.getElementById('aiEvaluation').textContent = "The debate is progressing. Both users are presenting interesting points. Consider addressing [specific aspect] in your next responses.";
+    }
+</script>
 {% endblock %}

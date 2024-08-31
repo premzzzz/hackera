@@ -1,90 +1,140 @@
 {% extends "base.html" %}
-
 {% block title %}Register - AI Debate Platform{% endblock %}
-
 {% block content %}
-<div class="flex justify-center items-center min-h-screen">
-    <div class="w-full max-w-md bg-gray-800 p-8 rounded-lg shadow-lg">
-        <h2 class="text-3xl font-bold mb-6 text-blue-400">Welcome</h2>
-        <div class="mb-4">
-            <button id="loginTab" class="w-1/2 py-2 px-4 bg-blue-600 text-white font-semibold rounded-tl-lg">Login</button>
-            <button id="signupTab" class="w-1/2 py-2 px-4 bg-gray-700 text-white font-semibold rounded-tr-lg">Sign Up</button>
-        </div>
+<style>
+  .auth-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: calc(100vh - 80px);
+    padding-top: 80px;
+  }
+  .auth-box {
+    width: 100%;
+    max-width: 400px;
+    background-color: rgba(45, 55, 72, 0.9);
+    padding: 2rem;
+    border-radius: 0.5rem;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  }
+  .tab-buttons {
+    display: flex;
+    margin-bottom: 1rem;
+  }
+  .tab-button {
+    width: 50%;
+    padding: 0.75rem 1rem;
+    font-weight: bold;
+    color: #fff;
+    background-color: #4a5568;
+    border: none;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+  }
+  .tab-button.active {
+    background-color: #3182ce;
+  }
+  .tab-button:first-child {
+    border-top-left-radius: 0.375rem;
+    border-bottom-left-radius: 0.375rem;
+  }
+  .tab-button:last-child {
+    border-top-right-radius: 0.375rem;
+    border-bottom-right-radius: 0.375rem;
+  }
+  .form-group {
+    margin-bottom: 1rem;
+  }
+  .form-label {
+    display: block;
+    font-size: 0.875rem;
+    font-weight: 500;
+    color: #e2e8f0;
+    margin-bottom: 0.5rem;
+  }
+  .form-input {
+    width: 100%;
+    padding: 0.5rem 0.75rem;
+    background-color: #4a5568;
+    color: #fff;
+    border: 1px solid #4a5568;
+    border-radius: 0.375rem;
+    transition: border-color 0.3s ease;
+  }
+  .form-input:focus {
+    outline: none;
+    border-color: #3182ce;
+  }
+  .submit-button {
+    width: 100%;
+    padding: 0.75rem 1rem;
+    background-color: #3182ce;
+    color: #fff;
+    font-weight: bold;
+    border: none;
+    border-radius: 0.375rem;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+  }
+  .submit-button:hover {
+    background-color: #2c5282;
+  }
+</style>
 
-        <!-- Display Flashed Messages -->
-        {% with messages = get_flashed_messages() %}
-            {% if messages %}
-                <div class="mb-4">
-                    {% for message in messages %}
-                        <p class="text-red-500">{{ message }}</p>
-                    {% endfor %}
-                </div>
-            {% endif %}
-        {% endwith %}
-
-        <!-- Login Form -->
-        <form id="loginForm" method="POST" action="{{ url_for('login') }}" class="hidden">
-            <div class="mb-4">
-                <label for="login-username" class="block text-sm font-medium text-gray-300 mb-2">Username</label>
-                <input type="text" id="login-username" name="username" required
-                       class="w-full px-3 py-2 bg-gray-700 text-white rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
-            </div>
-            <div class="mb-6">
-                <label for="login-password" class="block text-sm font-medium text-gray-300 mb-2">Password</label>
-                <input type="password" id="login-password" name="password" required
-                       class="w-full px-3 py-2 bg-gray-700 text-white rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
-            </div>
-            <button type="submit"
-                    class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded transition duration-300">
-                Log In
-            </button>
-        </form>
-
-        <!-- Signup Form -->
-        <form id="signupForm" method="POST" action="{{ url_for('signup') }}" class="hidden">
-            <div class="mb-4">
-                <label for="signup-username" class="block text-sm font-medium text-gray-300 mb-2">Username</label>
-                <input type="text" id="signup-username" name="username" required
-                       class="w-full px-3 py-2 bg-gray-700 text-white rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
-            </div>
-            <div class="mb-6">
-                <label for="signup-password" class="block text-sm font-medium text-gray-300 mb-2">Password</label>
-                <input type="password" id="signup-password" name="password" required
-                       class="w-full px-3 py-2 bg-gray-700 text-white rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
-            </div>
-            <button type="submit"
-                    class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded transition duration-300">
-                Sign Up
-            </button>
-        </form>
+<div class="auth-container">
+  <div class="auth-box">
+    <h2 class="text-3xl font-bold mb-6 text-blue-400">Welcome</h2>
+    <div class="tab-buttons">
+      <button id="loginTab" class="tab-button active">Login</button>
+      <button id="signupTab" class="tab-button">Sign Up</button>
     </div>
+
+    <!-- Login Form -->
+    <form id="loginForm" method="POST" action="{{ url_for('login') }}">
+      <div class="form-group">
+        <label for="login-username" class="form-label">Username</label>
+        <input type="text" id="login-username" name="username" required class="form-input">
+      </div>
+      <div class="form-group">
+        <label for="login-password" class="form-label">Password</label>
+        <input type="password" id="login-password" name="password" required class="form-input">
+      </div>
+      <button type="submit" class="submit-button">Log In</button>
+    </form>
+
+    <!-- Signup Form -->
+    <form id="signupForm" method="POST" action="{{ url_for('signup') }}" style="display: none;">
+      <div class="form-group">
+        <label for="signup-username" class="form-label">Username</label>
+        <input type="text" id="signup-username" name="username" required class="form-input">
+      </div>
+      <div class="form-group">
+        <label for="signup-password" class="form-label">Password</label>
+        <input type="password" id="signup-password" name="password" required class="form-input">
+      </div>
+      <button type="submit" class="submit-button">Sign Up</button>
+    </form>
+  </div>
 </div>
 
 <script>
-    const loginTab = document.getElementById('loginTab');
-    const signupTab = document.getElementById('signupTab');
-    const loginForm = document.getElementById('loginForm');
-    const signupForm = document.getElementById('signupForm');
+  const loginTab = document.getElementById('loginTab');
+  const signupTab = document.getElementById('signupTab');
+  const loginForm = document.getElementById('loginForm');
+  const signupForm = document.getElementById('signupForm');
 
-    loginTab.addEventListener('click', () => {
-        loginTab.classList.remove('bg-gray-700');
-        loginTab.classList.add('bg-blue-600');
-        signupTab.classList.remove('bg-blue-600');
-        signupTab.classList.add('bg-gray-700');
-        loginForm.classList.remove('hidden');
-        signupForm.classList.add('hidden');
-    });
+  loginTab.addEventListener('click', () => {
+    loginTab.classList.add('active');
+    signupTab.classList.remove('active');
+    loginForm.style.display = 'block';
+    signupForm.style.display = 'none';
+  });
 
-    signupTab.addEventListener('click', () => {
-        signupTab.classList.remove('bg-gray-700');
-        signupTab.classList.add('bg-blue-600');
-        loginTab.classList.remove('bg-blue-600');
-        loginTab.classList.add('bg-gray-700');
-        signupForm.classList.remove('hidden');
-        loginForm.classList.add('hidden');
-    });
-
-    // Show login form by default
-    loginTab.click();
+  signupTab.addEventListener('click', () => {
+    signupTab.classList.add('active');
+    loginTab.classList.remove('active');
+    signupForm.style.display = 'block';
+    loginForm.style.display = 'none';
+  });
 </script>
 {% endblock %}

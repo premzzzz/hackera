@@ -1,0 +1,126 @@
+{% extends "base.html" %}
+{% block title %}AI vs User Debate - AI Debate Platform{% endblock %}
+{% block content %}
+<div class="bg-gray-800 p-8 rounded-lg shadow-lg">
+    <h2 class="text-3xl font-bold mb-6 text-blue-400">AI vs User Debate</h2>
+    <h3 class="text-2xl font-bold mb-4 text-green-400">Topic: {{ topic }}</h3>
+    
+    <div class="grid grid-cols-2 gap-4 mb-4">
+        <div id="userSide" class="bg-gray-700 p-4 rounded-lg overflow-y-auto h-96">
+            <h4 class="text-xl font-bold mb-2 text-green-400">User</h4>
+            <div id="userMessages"></div>
+        </div>
+        <div id="aiSide" class="bg-gray-700 p-4 rounded-lg overflow-y-auto h-96">
+            <h4 class="text-xl font-bold mb-2 text-blue-400">AI</h4>
+            <div id="aiMessages"></div>
+        </div>
+    </div>
+    
+    <div class="mb-4">
+        <textarea id="userInput" class="w-full bg-gray-700 text-white p-2 rounded-md" rows="4" placeholder="Type your response here..."></textarea>
+    </div>
+    
+    <div class="flex justify-between">
+        <button id="sendButton" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded transition duration-300">
+            Send
+        </button>
+        <button id="endDebateButton" class="bg-red-600 hover:bg-red-700 text-white font-bold py-2 px-4 rounded transition duration-300">
+            End Debate
+        </button>
+    </div>
+</div>
+
+<div id="resultsModal" class="hidden fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full">
+    <div class="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-gray-800">
+        <div class="mt-3 text-center">
+            <h3 class="text-lg leading-6 font-medium text-white">Debate Results</h3>
+            <div class="mt-2 px-7 py-3">
+                <p class="text-sm text-gray-300">Average User Score: <span id="avgUserScore"></span></p>
+                <p class="text-sm text-gray-300">Average AI Score: <span id="avgAIScore"></span></p>
+                <p class="text-sm text-gray-300">User Win Rate: <span id="userWinRate"></span>%</p>
+                <div id="scorePlot" class="mt-4"></div>
+            </div>
+            <div class="items-center px-4 py-3">
+                <button id="closeModal" class="px-4 py-2 bg-blue-500 text-white text-base font-medium rounded-md w-full shadow-sm hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-300">
+                    Close
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const sendButton = document.getElementById('sendButton');
+        const endDebateButton = document.getElementById('endDebateButton');
+        const userInput = document.getElementById('userInput');
+        const userMessages = document.getElementById('userMessages');
+        const aiMessages = document.getElementById('aiMessages');
+        const resultsModal = document.getElementById('resultsModal');
+        const closeModal = document.getElementById('closeModal');
+
+        sendButton.addEventListener('click', sendMessage);
+        endDebateButton.addEventListener('click', endDebate);
+        closeModal.addEventListener('click', () => {
+            resultsModal.classList.add('hidden');
+        });
+
+        function sendMessage() {
+            const message = userInput.value.trim();
+            if (message) {
+                addMessage('user', message);
+                userInput.value = '';
+                
+                // Send the message to the server and get AI response
+                fetch('/debate', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded',
+                    },
+                    body: `user_input=${encodeURIComponent(message)}`
+                })
+                .then(response => response.json())
+                .then(data => {
+                    addMessage('ai', data.ai_response);
+                })
+                .catch(error => console.error('Error:', error));
+            }
+        }
+
+        function addMessage(sender, message) {
+            const messageElement = document.createElement('div');
+            messageElement.className = 'mb-2 p-2 rounded ' + (sender === 'user' ? 'bg-green-800' : 'bg-blue-800');
+            messageElement.textContent = message;
+            
+            if (sender === 'user') {
+                userMessages.appendChild(messageElement);
+            } else {
+                aiMessages.appendChild(messageElement);
+            }
+            
+            // Scroll to the bottom of the message container
+            userMessages.scrollTop = userMessages.scrollHeight;
+            aiMessages.scrollTop = aiMessages.scrollHeight;
+        }
+
+        function endDebate() {
+            fetch('/end_debate', {
+                method: 'POST'
+            })
+            .then(response => response.json())
+            .then(data => {
+                document.getElementById('avgUserScore').textContent = data.average_user_score.toFixed(2);
+                document.getElementById('avgAIScore').textContent = data.average_ai_score.toFixed(2);
+                document.getElementById('userWinRate').textContent = data.user_win_rate.toFixed(2);
+                
+                // Create the plot
+                Plotly.newPlot('scorePlot', JSON.parse(data.plot_json));
+                
+                resultsModal.classList.remove('hidden');
+            })
+            .catch(error => console.error('Error:', error));
+        }
+    });
+</script>
+{% endblock %}

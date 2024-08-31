@@ -1,28 +1,18 @@
 {% extends "base.html" %}
-
-{% block title %}AI vs User Debate - AI Debate Platform{% endblock %}
-
+{% block title %}Start AI vs User Debate - AI Debate Platform{% endblock %}
 {% block content %}
 <div class="bg-gray-800 p-8 rounded-lg shadow-lg">
-    <h2 class="text-3xl font-bold mb-6 text-blue-400">AI vs User Debate</h2>
-    <div class="mb-8">
-        <h3 class="text-2xl font-bold mb-4 text-green-400">Topic: Climate Change Solutions</h3>
-        <p class="text-gray-300 mb-4">Discuss and debate potential solutions to address climate change.</p>
-    </div>
-    <div class="space-y-6">
-        <div class="bg-gray-700 p-4 rounded-lg">
-            <p class="font-bold text-blue-400">AI:</p>
-            <p>One effective solution to combat climate change is to invest heavily in renewable energy sources such as solar and wind power. This approach can significantly reduce our reliance on fossil fuels and decrease greenhouse gas emissions.</p>
+    <h2 class="text-3xl font-bold mb-6 text-blue-400">Start AI vs User Debate</h2>
+    <form action="{{ url_for('single_user') }}" method="POST" class="space-y-4">
+        <div>
+            <label for="topic" class="block text-sm font-medium text-gray-300">Debate Topic</label>
+            <input type="text" id="topic" name="topic" required class="mt-1 block w-full rounded-md bg-gray-700 border-gray-600 text-white focus:border-indigo-500 focus:ring-indigo-500">
         </div>
-        <div class="bg-gray-700 p-4 rounded-lg">
-            <p class="font-bold text-green-400">You:</p>
-            <textarea class="w-full bg-gray-600 text-white p-2 rounded-md" rows="4" placeholder="Type your response here..."></textarea>
+        <div>
+            <button type="submit" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded transition duration-300">
+                Start Debate
+            </button>
         </div>
-    </div>
-    <div class="mt-6 text-right">
-        <button class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded transition duration-300">
-            Submit Response
-        </button>
-    </div>
+    </form>
 </div>
 {% endblock %}
