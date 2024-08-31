@@ -1,10 +1,15 @@
 :root {
-  --primary-color: #0a192f;
-  --secondary-color: #64ffda;
+  --primary-color: #0a0e17;
+  --secondary-color: #00ffff;
   --text-color: #e6f1ff;
-  --background-color: #0a192f;
-  --card-background: #172a45;
-  --hover-color: #233554;
+  --background-color: #0f172a;
+  --card-background: #1e293b;
+  --hover-color: #334155;
+  --input-background: #1e293b;
+  --button-color: #3b82f6;
+  --button-hover: #2563eb;
+  --user1-color: #fbbf24;
+  --user2-color: #a855f7;
 }
 
 body {
@@ -14,40 +19,30 @@ body {
   line-height: 1.6;
   margin: 0;
   padding: 0;
-  position: relative; /* Ensure container is positioned relative to allow stacking */
-  z-index: 1; /* Make sure container content is above particles background */
-}
-
-#particles-js {
-  position: absolute; /* Absolute positioning to overlay on top of background */
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  z-index: -1; /* Ensure it stays behind all content */
+  transition: background-color 0.3s ease;
 }
 
 .container {
   max-width: 1200px;
   margin: 0 auto;
   padding: 0 20px;
-  top :6rem;
-}
-
-.social-links{
-  margin-top: 10rem;
 }
 
 /* Navbar */
 .navbar {
-  background-color: rgba(10, 25, 47, 0.9);
+  background-color: rgba(10, 14, 23, 0.8);
   padding: 1rem 5%;
   position: fixed;
   top: 0;
   left: 0;
   right: 0;
   z-index: 1000;
-  backdrop-filter: blur(4px);
+  backdrop-filter: blur(10px);
+  transition: all 0.3s ease;
+}
+
+.navbar.scrolled {
+  background-color: rgba(10, 14, 23, 0.95);
 }
 
 .navbar .container {
@@ -62,10 +57,6 @@ body {
   color: var(--secondary-color);
   text-decoration: none;
   transition: color 0.3s ease;
-}
-
-.nav-links {
-  display: flex;
 }
 
 .nav-links a {
@@ -96,122 +87,211 @@ body {
   width: 100%;
 }
 
-
-/* Ensure main content starts below navbar */
-main {
-  padding-top: 80px; /* Space for navbar */
-  position: relative;
-  z-index: 1; /* Keep main content above particles background */
-}
-
 /* Hero Section */
 .hero-section {
-  min-height: calc(100vh - 80px);
+  min-height: 100vh;
   display: flex;
   flex-direction: column;
   justify-content: center;
   align-items: center;
   text-align: center;
   padding: 2rem 0;
+  position: relative;
+  overflow: hidden;
+}
+
+.hero-section::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(45deg, rgba(10, 14, 23, 0.7), rgba(10, 14, 23, 0.3));
+  z-index: -1;
 }
 
 .hero-section h1 {
-  font-size: 3rem;
+  font-size: 3.5rem;
   margin-bottom: 1rem;
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  animation: fadeInUp 1s ease-out;
 }
 
 .hero-section p {
   font-size: 1.2rem;
   max-width: 600px;
   margin-bottom: 2rem;
-}
-
-/* Cards */
-.card {
-  background-color: var(--card-background);
-  border-radius: 8px;
-  padding: 1.5rem;
-  margin-bottom: 1.5rem;
-  transition: transform 0.3s ease, box-shadow 0.3s ease;
-}
-
-.card:hover {
-  transform: translateY(-5px);
-  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
+  animation: fadeInUp 1s ease-out 0.3s;
+  opacity: 0;
+  animation-fill-mode: forwards;
 }
 
 /* Buttons */
-.btn {
+.btn, .futuristic-button {
   display: inline-block;
-  background-color: var(--secondary-color);
-  color: var(--primary-color);
+  background-color: transparent;
+  color: var(--secondary-color);
   padding: 0.75rem 1.5rem;
-  border-radius: 4px;
+  border: 2px solid var(--secondary-color);
+  border-radius: 30px;
   text-decoration: none;
   font-weight: bold;
-  transition: background-color 0.3s ease, transform 0.3s ease;
+  transition: all 0.3s ease;
+  position: relative;
+  overflow: hidden;
+  z-index: 1;
 }
 
-.btn:hover {
-  background-color: #53e6c6;
-  transform: translateY(-2px);
+.btn::before, .futuristic-button::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background-color: var(--secondary-color);
+  transition: all 0.3s ease;
+  z-index: -1;
+}
+
+.btn:hover, .futuristic-button:hover {
+  color: var(--primary-color);
+}
+
+.btn:hover::before, .futuristic-button:hover::before {
+  left: 0;
+}
+
+.futuristic-button .ripple {
+  position: absolute;
+  border-radius: 50%;
+  transform: scale(0);
+  animation: ripple 0.6s linear;
+  background-color: rgba(255, 255, 255, 0.7);
+}
+
+@keyframes ripple {
+  to {
+    transform: scale(4);
+    opacity: 0;
+  }
 }
 
 /* Features section */
 .features {
-  padding: 4rem 0;
+  padding: 6rem 0;
+  background-color: rgba(26, 31, 46, 0.5);
+}
+
+.features h2 {
+  text-align: center;
+  font-size: 2.5rem;
+  margin-bottom: 3rem;
+  color: var(--secondary-color);
 }
 
 .features-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-  gap: 2rem;
+  gap: 3rem;
 }
 
-.feature-card {
+.feature-card, .card {
   background-color: var(--card-background);
   border-radius: 8px;
-  padding: 1.5rem;
+  padding: 2rem;
   text-align: center;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.feature-card:hover, .card:hover {
+  transform: translateY(-10px);
+  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
 }
 
 .feature-icon {
-  font-size: 2.5rem;
+  font-size: 3rem;
   color: var(--secondary-color);
-  margin-bottom: 1rem;
+  margin-bottom: 1.5rem;
 }
 
 /* About section */
 .about {
-  padding: 4rem 0;
+  padding: 6rem 0;
   text-align: center;
+  background-color: rgba(10, 14, 23, 0.8);
+}
+
+.about h2 {
+  font-size: 2.5rem;
+  margin-bottom: 2rem;
+  color: var(--secondary-color);
 }
 
 .about p {
   max-width: 800px;
   margin: 0 auto;
+  font-size: 1.1rem;
+  line-height: 1.8;
+}
+
+/* Form Styles */
+input[type="text"], textarea {
+  background-color: var(--card-background);
+  border: 1px solid var(--hover-color);
+  color: var(--text-color);
+  padding: 0.5rem;
+  border-radius: 5px;
+  transition: all 0.3s ease;
+}
+
+input[type="text"]:focus, textarea:focus {
+  border-color: var(--secondary-color);
+  box-shadow: 0 0 0 2px var(--secondary-color);
+}
+
+/* AI Response Typing Effect */
+.ai-response {
+  border-left: 3px solid var(--secondary-color);
+  padding-left: 1rem;
+  margin-bottom: 1rem;
+}
+
+/* Glowing effect for accent elements */
+.glow {
+  text-shadow: 0 0 10px var(--secondary-color);
 }
 
 /* Animations */
-@keyframes fadeIn {
-  from { opacity: 0; transform: translateY(20px); }
-  to { opacity: 1; transform: translateY(0); }
+@keyframes fadeInUp {
+  from { 
+    opacity: 0; 
+    transform: translateY(20px); 
+  }
+  to { 
+    opacity: 1; 
+    transform: translateY(0); 
+  }
 }
 
 .fade-in {
-  animation: fadeIn 1s ease-out;
+  animation: fadeInUp 1s ease-out;
+}
+
+/* Particles effect */
+#particles-js {
+  position: fixed;
+  width: 100%;
+  height: 100%;
+  top: 0;
+  left: 0;
+  z-index: -1;
 }
 
 /* Responsive Design */
 @media screen and (max-width: 768px) {
-  .nav-links {
-    display: none;
-  }
-
-  .hamburger {
-    display: block;
-  }
-
   .hero-section h1 {
     font-size: 2.5rem;
   }
@@ -223,206 +303,8 @@ main {
   .features-grid {
     grid-template-columns: 1fr;
   }
-}
-
-/* Login/Signup Page Styling */
-
-/* Flexbox container for centering content */
-.flex {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    min-height: 100vh;
-    padding-top: 5rem; /* Adjust padding-top as needed */
-}
-
-.w-full {
-    width: 100%;
-}
-
-.max-w-md {
-    max-width: 28rem; /* Matches Tailwind's max-w-md */
-}
-
-.bg-gray-800 {
-    background-color: #2d3748;
-}
-
-.p-8 {
-    padding: 2rem;
-}
-
-.rounded-lg {
-    border-radius: 0.5rem;
-}
-
-.shadow-lg {
-    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
-}
-
-/* Button and tab styling */
-button[id*="Tab"] {
-    width: 50%;
+  
+  .futuristic-button {
     padding: 0.5rem 1rem;
-    font-weight: bold;
-    color: #fff;
-}
-
-button[id*="Tab"].active {
-    background-color: #2563eb;
-}
-
-/* Hidden form styling */
-.hidden {
-    display: none;
-}
-
-/* Error messages */
-.text-red-500 {
-    color: #f56565;
-}
-
-/* Ensure proper spacing and visibility of the flashed messages */
-.mb-4 {
-    margin-bottom: 1rem;
-}
-
-.mb-6 {
-    margin-bottom: 1.5rem;
-}
-
-.block {
-    display: block;
-}
-
-.text-sm {
-    font-size: 0.875rem;
-}
-
-.font-medium {
-    font-weight: 500;
-}
-
-.text-gray-300 {
-    color: #d1d5db;
-}
-
-.px-3 {
-    padding-left: 0.75rem;
-    padding-right: 0.75rem;
-}
-
-.py-2 {
-    padding-top: 0.5rem;
-    padding-bottom: 0.5rem;
-}
-
-.bg-gray-700 {
-    background-color: #4a5568;
-}
-
-.text-white {
-    color: #ffffff;
-}
-
-.rounded-md {
-    border-radius: 0.375rem;
-}
-
-.focus\:outline-none {
-    outline: 2px solid transparent;
-    outline-offset: 2px;
-}
-
-.focus\:ring-2 {
-    box-shadow: 0 0 0 2px rgba(0, 123, 255, 0.5);
-}
-
-.focus\:ring-blue-500 {
-    box-shadow: 0 0 0 2px #2563eb;
-}
-
-.bg-blue-600 {
-    background-color: #2563eb;
-}
-
-.hover\:bg-blue-700:hover {
-    background-color: #1d4ed8;
-}
-
-.font-bold {
-    font-weight: 700;
-}
-
-.transition {
-    transition: all 0.3s ease;
-}
-
-.duration-300 {
-    transition-duration: 300ms;
-}
-
-.rounded {
-    border-radius: 0.25rem;
-}
-
-/* Adjust the padding to match your container */
-.min-h-screen {
-    min-height: calc(100vh - 4rem);
-}
-
-
-/* Login/Signup Form Styles */
-.max-w-md {
-  max-width: 28rem;
-}
-
-.bg-gray-800 {
-  background-color: rgba(45, 55, 72, 0.9);
-}
-
-.text-blue-400 {
-  color: #63b3ed;
-}
-
-.bg-blue-600 {
-  background-color: #3182ce;
-}
-
-.bg-gray-700 {
-  background-color: #4a5568;
-}
-
-.text-gray-300 {
-  color: #e2e8f0;
-}
-
-.focus\:ring-blue-500:focus {
-  box-shadow: 0 0 0 3px rgba(66, 153, 225, 0.5);
-}
-
-.hover\:bg-blue-700:hover {
-  background-color: #2c5282;
-}
-
-/* Ensure the login/signup container is above the particles background */
-.flex.justify-center.items-center.min-h-screen {
-  position: relative;
-  z-index: 10;
-}
-
-/* Flash messages styling */
-.bg-secondary.text-primary {
-  background-color: #64ffda;
-  color: #0a192f;
-}
-
-/* Fade-in animation */
-@keyframes fadeIn {
-  from { opacity: 0; transform: translateY(20px); }
-  to { opacity: 1; transform: translateY(0); }
-}
-
-.fade-in {
-  animation: fadeIn 0.5s ease-out;
+  }
 }

@@ -34,6 +34,7 @@ db_config = {
 def get_db_connection():
     return psycopg2.connect(**db_config)
 
+
 # Ollama Model Setup
 llm = Ollama(model="llama3.1")
 
@@ -51,6 +52,8 @@ Your response:
 )
 
 debate_chain = LLMChain(llm=llm, prompt=debate_prompt)
+
+
 def initialize_database():
     try:
         with get_db_connection() as conn:
@@ -84,11 +87,11 @@ def initialize_database():
                         IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='debate_scores' AND column_name='plot_json') THEN
                             ALTER TABLE debate_scores ADD COLUMN plot_json TEXT;
                         END IF;
-                        
+
                         IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='debate_scores' AND column_name='user_scores') THEN
                             ALTER TABLE debate_scores ADD COLUMN user_scores FLOAT[];
                         END IF;
-                        
+
                         IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='debate_scores' AND column_name='ai_scores') THEN
                             ALTER TABLE debate_scores ADD COLUMN ai_scores FLOAT[];
                         END IF;
@@ -102,14 +105,17 @@ def initialize_database():
     except psycopg2.Error as e:
         print(f"An error occurred while initializing the database: {e.pgerror}")
 
+
 # Routes
 @app.route('/')
 def index():
     return render_template('index.html')
 
+
 @app.route('/register', methods=['GET'])
 def register():
     return render_template('register.html')
+
 
 @app.route('/signup', methods=['POST'])
 def signup():
@@ -144,6 +150,7 @@ def signup():
         flash(f"An error occurred during signup: {e.pgerror}")
         return redirect(url_for('register'))
 
+
 @app.route('/login', methods=['POST'])
 def login():
     username = request.form.get('username')
@@ -173,6 +180,7 @@ def login():
         flash(f"An error occurred during login: {e.pgerror}")
         return redirect(url_for('register'))
 
+
 @app.route('/dashboard')
 def dashboard():
     if 'username' not in session:
@@ -180,22 +188,22 @@ def dashboard():
         return redirect(url_for('register'))
 
     username = session['username']
-    
+
     # Generate mock scores for demonstration
     user_scores = [float(np.random.uniform(0, 10)) for _ in range(5)]
     ai_scores = [float(np.random.uniform(0, 10)) for _ in range(5)]
-    
+
     # Calculate average scores
     avg_user_score = sum(user_scores) / len(user_scores)
     avg_ai_score = sum(ai_scores) / len(ai_scores)
-    
+
     # Calculate win rate (assuming a score > 5 is a win)
     user_wins = sum(1 for score in user_scores if score > 5)
     win_rate = (user_wins / len(user_scores)) * 100
 
     # Generate scatter plot
     fig = go.Figure()
-    
+
     fig.add_trace(go.Scatter(
         x=list(range(1, len(user_scores) + 1)),
         y=user_scores,
@@ -203,7 +211,7 @@ def dashboard():
         name='User Scores',
         marker=dict(size=10, color='blue', symbol='circle')
     ))
-    
+
     fig.add_trace(go.Scatter(
         x=list(range(1, len(ai_scores) + 1)),
         y=ai_scores,
@@ -211,24 +219,24 @@ def dashboard():
         name='AI Scores',
         marker=dict(size=10, color='red', symbol='diamond')
     ))
-    
+
     fig.update_layout(
         title='Debate Scores: User vs AI',
         xaxis_title='Turn',
         yaxis_title='Score',
         yaxis=dict(range=[0, 10])
     )
-    
+
     plot_json = json.dumps(fig, cls=plotly.utils.PlotlyJSONEncoder)
 
-    return render_template('dashboard.html', 
+    return render_template('dashboard.html',
                            username=username,
                            avg_user_score=avg_user_score,
                            avg_ai_score=avg_ai_score,
                            win_rate=win_rate,
                            plot_json=plot_json)
 
-    
+
 @app.route('/delete_account', methods=['POST'])
 def delete_account():
     if 'username' in session:
@@ -248,11 +256,13 @@ def delete_account():
         flash('You are not logged in!')
         return redirect(url_for('register'))
 
+
 @app.route('/logout')
 def logout():
     session.pop('username', None)
     flash('You have been logged out.')
     return redirect(url_for('index'))
+
 
 @app.route('/single_user', methods=['GET', 'POST'])
 def single_user():
@@ -267,6 +277,7 @@ def single_user():
         return redirect(url_for('debate'))
 
     return render_template('single_user.html', username=session['username'])
+
 
 @app.route('/debate', methods=['GET', 'POST'])
 def debate():
@@ -293,7 +304,9 @@ def debate():
 
         return jsonify({'ai_response': ai_response})
 
-    return render_template('debate.html', username=session['username'], topic=session['debate_topic'], debate_history=session.get('debate_history', []))
+    return render_template('debate.html', username=session['username'], topic=session['debate_topic'],
+                           debate_history=session.get('debate_history', []))
+
 
 @app.route('/end_debate', methods=['POST'])
 def end_debate():
@@ -302,17 +315,17 @@ def end_debate():
         return redirect(url_for('single_user'))
 
     debate_history = session.get('debate_history', [])
-    
+
     # Simulate evaluation (replace with actual evaluation logic)
     user_scores = [float(np.random.uniform(0, 10)) for _ in range(len(debate_history) // 2)]
     ai_scores = [float(np.random.uniform(0, 10)) for _ in range(len(debate_history) // 2)]
-    
+
     logging.debug(f"Generated user_scores: {user_scores}")
     logging.debug(f"Generated ai_scores: {ai_scores}")
-    
+
     # Generate scatter plot
     fig = go.Figure()
-    
+
     fig.add_trace(go.Scatter(
         x=list(range(1, len(user_scores) + 1)),
         y=user_scores,
@@ -320,7 +333,7 @@ def end_debate():
         name='User Scores',
         marker=dict(size=10, color='blue', symbol='circle')
     ))
-    
+
     fig.add_trace(go.Scatter(
         x=list(range(1, len(ai_scores) + 1)),
         y=ai_scores,
@@ -328,14 +341,14 @@ def end_debate():
         name='AI Scores',
         marker=dict(size=10, color='red', symbol='diamond')
     ))
-    
+
     fig.update_layout(
         title='Debate Scores: User vs AI',
         xaxis_title='Turn',
         yaxis_title='Score',
         yaxis=dict(range=[0, 10])
     )
-    
+
     plot_json = json.dumps(fig, cls=plotly.utils.PlotlyJSONEncoder)
 
     # Store scores in the database
@@ -359,6 +372,7 @@ def end_debate():
     # Redirect to dashboard
     return redirect(url_for('dashboard'))
 
+
 @app.route('/multi_user')
 def multi_user():
     if 'username' in session:
@@ -366,6 +380,54 @@ def multi_user():
     else:
         flash('You need to log in to access this page.')
         return redirect(url_for('register'))
+
+
+@app.route('/evaluate_debate', methods=['POST'])
+def evaluate_debate():
+    if 'username' not in session:
+        return jsonify({'error': 'You need to be logged in to participate in debates.'}), 401
+
+    data = request.json
+    topic = data.get('topic')
+    debate_history = data.get('history')
+
+    if not topic or not debate_history:
+        return jsonify({'error': 'Missing topic or debate history'}), 400
+
+    # Create a formatted debate history string
+    formatted_history = "\n".join([f"{entry['user']}: {entry['message']}" for entry in debate_history])
+
+    # Create a prompt for the AI to evaluate the debate
+    evaluation_prompt = PromptTemplate(
+        input_variables=["topic", "debate_history"],
+        template="""
+        As an AI debate moderator, evaluate the following debate on the topic of {topic}.
+
+        Debate history:
+        {debate_history}
+
+        Please provide a brief evaluation of the debate so far, considering:
+        1. The strength and relevance of arguments from both sides.
+        2. The overall quality of the discourse.
+        3. Any suggestions for improvement or areas that could be explored further.
+
+        Limit your response to 2-3 sentences.
+
+        Your evaluation:
+        """
+    )
+
+    # Use the LLMChain to generate the evaluation
+    evaluation_chain = LLMChain(llm=llm, prompt=evaluation_prompt)
+    evaluation = evaluation_chain.invoke(
+        input={
+            "topic": topic,
+            "debate_history": formatted_history
+        }
+    )['text'].strip()
+
+    return jsonify({'evaluation': evaluation})
+
 
 if __name__ == '__main__':
     initialize_database()

@@ -7,8 +7,10 @@
     <!-- Topic Selection Form -->
     <form id="topicForm" class="mb-8">
         <label for="debateTopic" class="block text-white mb-2">Enter Debate Topic:</label>
-        <input type="text" id="debateTopic" name="debateTopic" class="w-full bg-gray-700 text-white p-2 rounded-md mb-2" required>
-        <button type="submit" class="bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-4 rounded transition duration-300">
+        <input type="text" id="debateTopic" name="debateTopic" class="w-full bg-gray-700 text-white p-2 rounded-md mb-2"
+               required>
+        <button type="submit"
+                class="bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-4 rounded transition duration-300">
             Start Debate
         </button>
     </form>
@@ -16,14 +18,16 @@
     <!-- Debate Area (initially hidden) -->
     <div id="debateArea" class="hidden">
         <h3 id="topicDisplay" class="text-2xl font-bold mb-4 text-green-400"></h3>
-        
+
         <div class="flex space-x-4">
             <!-- User1 Side -->
             <div class="w-1/2 space-y-4">
                 <h4 class="text-xl font-bold text-yellow-400">User1</h4>
                 <div id="user1Messages" class="space-y-2"></div>
-                <textarea id="user1Input" class="w-full bg-gray-700 text-white p-2 rounded-md" rows="4" placeholder="User1, type your response here..."></textarea>
-                <button onclick="submitMessage('user1')" class="bg-yellow-600 hover:bg-yellow-700 text-white font-bold py-2 px-4 rounded transition duration-300">
+                <textarea id="user1Input" class="w-full bg-gray-700 text-white p-2 rounded-md" rows="4"
+                          placeholder="User1, type your response here..."></textarea>
+                <button onclick="submitMessage('user1')"
+                        class="bg-yellow-600 hover:bg-yellow-700 text-white font-bold py-2 px-4 rounded transition duration-300">
                     Submit Response
                 </button>
             </div>
@@ -32,8 +36,10 @@
             <div class="w-1/2 space-y-4">
                 <h4 class="text-xl font-bold text-purple-400">User2</h4>
                 <div id="user2Messages" class="space-y-2"></div>
-                <textarea id="user2Input" class="w-full bg-gray-700 text-white p-2 rounded-md" rows="4" placeholder="User2, type your response here..."></textarea>
-                <button onclick="submitMessage('user2')" class="bg-purple-600 hover:bg-purple-700 text-white font-bold py-2 px-4 rounded transition duration-300">
+                <textarea id="user2Input" class="w-full bg-gray-700 text-white p-2 rounded-md" rows="4"
+                          placeholder="User2, type your response here..."></textarea>
+                <button onclick="submitMessage('user2')"
+                        class="bg-purple-600 hover:bg-purple-700 text-white font-bold py-2 px-4 rounded transition duration-300">
                     Submit Response
                 </button>
             </div>
@@ -48,10 +54,13 @@
 </div>
 
 <script>
-    document.getElementById('topicForm').addEventListener('submit', function(e) {
+    let debateHistory = [];
+    let debateTopic = '';
+
+    document.getElementById('topicForm').addEventListener('submit', function (e) {
         e.preventDefault();
-        var topic = document.getElementById('debateTopic').value;
-        document.getElementById('topicDisplay').textContent = "Topic: " + topic;
+        debateTopic = document.getElementById('debateTopic').value;
+        document.getElementById('topicDisplay').textContent = "Topic: " + debateTopic;
         document.getElementById('debateArea').classList.remove('hidden');
         this.classList.add('hidden');
     });
@@ -66,16 +75,30 @@
             newMessage.textContent = message;
             messagesDiv.appendChild(newMessage);
             input.value = '';
-            
-            // Here you would typically send this message to the server
-            // and get an updated AI evaluation
+
+            debateHistory.push({user: user, message: message});
             updateAIEvaluation();
         }
     }
 
     function updateAIEvaluation() {
-        // This is a placeholder. In a real application, you'd fetch the evaluation from the server
-        document.getElementById('aiEvaluation').textContent = "The debate is progressing. Both users are presenting interesting points. Consider addressing [specific aspect] in your next responses.";
+        fetch('/evaluate_debate', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                topic: debateTopic,
+                history: debateHistory
+            }),
+        })
+                .then(response => response.json())
+                .then(data => {
+                    document.getElementById('aiEvaluation').textContent = data.evaluation;
+                })
+                .catch((error) => {
+                    console.error('Error:', error);
+                });
     }
 </script>
 {% endblock %}

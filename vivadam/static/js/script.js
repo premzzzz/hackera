@@ -16,6 +16,8 @@ document.addEventListener('DOMContentLoaded', () => {
           modes: { repulse: { distance: 100, duration: 0.4 }, push: { particles_nb: 4 } }
       },
       retina_detect: true
+
+      
   });
 
   // Navbar scroll effect
@@ -63,6 +65,23 @@ document.addEventListener('DOMContentLoaded', () => {
       response.textContent = '';
       typeWriter(response, text, 0);
   });
+
+  // Add ripple effect to buttons
+  document.querySelectorAll('.futuristic-button').forEach(button => {
+    button.addEventListener('click', function(e) {
+      let ripple = document.createElement('span');
+      ripple.classList.add('ripple');
+      this.appendChild(ripple);
+      let x = e.clientX - e.target.offsetLeft;
+      let y = e.clientY - e.target.offsetTop;
+      ripple.style.left = `${x}px`;
+      ripple.style.top = `${y}px`;
+      setTimeout(() => {
+        ripple.remove();
+      }, 600);
+    });
+  });
+  
 });
 
 function createRipple(event) {
