@@ -1,0 +1,36 @@
+{% extends "base.html" %}
+
+{% block title %}Multi-User Debate - AI Debate Platform{% endblock %}
+
+{% block content %}
+<div class="bg-gray-800 p-8 rounded-lg shadow-lg">
+    <h2 class="text-3xl font-bold mb-6 text-blue-400">Multi-User Debate</h2>
+    <div class="mb-8">
+        <h3 class="text-2xl font-bold mb-4 text-green-400">Topic: The Future of Education</h3>
+        <p class="text-gray-300 mb-4">Discuss and debate how education systems should evolve in the coming decades.</p>
+    </div>
+    <div class="space-y-6">
+        <div class="bg-gray-700 p-4 rounded-lg">
+            <p class="font-bold text-yellow-400">User1:</p>
+            <p>I believe that the future of education lies in personalized learning experiences powered by AI. This approach can adapt to each student's needs and pace, maximizing their potential.</p>
+        </div>
+        <div class="bg-gray-700 p-4 rounded-lg">
+            <p class="font-bold text-purple-400">User2:</p>
+            <p>While AI-powered personalization has its merits, we shouldn't overlook the importance of human interaction in education. A balanced approach combining technology and traditional teaching methods might be more effective.</p>
+        </div>
+        <div class="bg-gray-700 p-4 rounded-lg">
+            <p class="font-bold text-green-400">You:</p>
+            <textarea class="w-full bg-gray-600 text-white p-2 rounded-md" rows="4" placeholder="Type your response here..."></textarea>
+        </div>
+    </div>
+    <div class="mt-6 text-right">
+        <button class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded transition duration-300">
+            Submit Response
+        </button>
+    </div>
+    <div class="mt-8 bg-gray-700 p-4 rounded-lg">
+        <h4 class="text-xl font-bold mb-2 text-blue-400">AI Moderator Evaluation</h4>
+        <p>The debate is progressing well, with both sides presenting valid arguments. User1 emphasizes the potential of AI in personalized learning, while User2 highlights the importance of human interaction. Consider addressing how these two approaches might be integrated for optimal results.</p>
+    </div>
+</div>
+{% endblock %}

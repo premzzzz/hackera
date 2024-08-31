@@ -1,0 +1,46 @@
+{% extends "base.html" %}
+{% block title %}AI Debate Platform - Home{% endblock %}
+{% block content %}
+<!-- Particle background container -->
+<div id="particles-js" class="absolute top-0 left-0 w-full h-full z-0"></div>
+
+<section class="hero-section fade-in">
+  <h1>Welcome to AI Debate Platform</h1>
+  <p>Engage in thought-provoking debates with AI or other users.</p>
+  <a href="{{ url_for('single_user') }}" class="btn">Start Debating</a>
+</section>
+
+<section class="features">
+  <div class="container">
+    <h2>Our Features</h2>
+    <div class="features-grid">
+      <div class="feature-card fade-in">
+        <i class="fas fa-robot feature-icon"></i>
+        <h3>AI Opponent</h3>
+        <p>Challenge our advanced AI in stimulating debates on various topics.</p>
+      </div>
+      <div class="feature-card fade-in">
+        <i class="fas fa-users feature-icon"></i>
+        <h3>Multi-User Debates</h3>
+        <p>Engage with other users in real-time debates moderated by AI.</p>
+      </div>
+      <div class="feature-card fade-in">
+        <i class="fas fa-brain feature-icon"></i>
+        <h3>Skill Development</h3>
+        <p>Improve your critical thinking and argumentation skills.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="about fade-in">
+  <div class="container">
+    <h2>About AI Debate Platform</h2>
+    <p>
+      AI Debate Platform is an innovative space where technology meets intellectual discourse.
+      Our platform allows users to engage in meaningful debates with advanced AI or other users,
+      fostering critical thinking and expanding knowledge horizons.
+    </p>
+  </div>
+</section>
+{% endblock %}

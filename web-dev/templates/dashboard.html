@@ -1,0 +1,36 @@
+{% extends "base.html" %}
+
+{% block title %}Dashboard - AI Debate Platform{% endblock %}
+
+{% block content %}
+<div class="bg-gray-800 p-8 rounded-lg shadow-lg">
+    <h2 class="text-3xl font-bold mb-6 text-blue-400">Welcome, {{ username }}!</h2>
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+        <div class="bg-gray-700 p-6 rounded-lg">
+            <h3 class="text-2xl font-bold mb-4 text-green-400">Your Progress</h3>
+            <p class="mb-2">Debates participated: <span class="font-bold">12</span></p>
+            <p class="mb-2">Win rate: <span class="font-bold">75%</span></p>
+            <p>Total points: <span class="font-bold">1250</span></p>
+        </div>
+        <div class="bg-gray-700 p-6 rounded-lg">
+            <h3 class="text-2xl font-bold mb-4 text-yellow-400">Quick Actions</h3>
+            <div class="space-y-4">
+                <a href="{{ url_for('single_user') }}" class="block bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded transition duration-300 text-center">
+                    Start New AI Debate
+                </a>
+                <a href="{{ url_for('multi_user') }}" class="block bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-4 rounded transition duration-300 text-center">
+                    Join Multi-User Debate
+                </a>
+            </div>
+        </div>
+    </div>
+    <div class="mt-8">
+        <h3 class="text-2xl font-bold mb-4 text-red-400">Account Management</h3>
+        <form action="{{ url_for('delete_account') }}" method="POST" onsubmit="return confirm('Are you sure you want to delete your account? This action cannot be undone.');">
+            <button type="submit" class="bg-red-600 hover:bg-red-700 text-white font-bold py-2 px-4 rounded transition duration-300">
+                Delete Account
+            </button>
+        </form>
+    </div>
+</div>
+{% endblock %}

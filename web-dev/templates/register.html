@@ -1,0 +1,90 @@
+{% extends "base.html" %}
+
+{% block title %}Register - AI Debate Platform{% endblock %}
+
+{% block content %}
+<div class="flex justify-center items-center min-h-screen">
+    <div class="w-full max-w-md bg-gray-800 p-8 rounded-lg shadow-lg">
+        <h2 class="text-3xl font-bold mb-6 text-blue-400">Welcome</h2>
+        <div class="mb-4">
+            <button id="loginTab" class="w-1/2 py-2 px-4 bg-blue-600 text-white font-semibold rounded-tl-lg">Login</button>
+            <button id="signupTab" class="w-1/2 py-2 px-4 bg-gray-700 text-white font-semibold rounded-tr-lg">Sign Up</button>
+        </div>
+
+        <!-- Display Flashed Messages -->
+        {% with messages = get_flashed_messages() %}
+            {% if messages %}
+                <div class="mb-4">
+                    {% for message in messages %}
+                        <p class="text-red-500">{{ message }}</p>
+                    {% endfor %}
+                </div>
+            {% endif %}
+        {% endwith %}
+
+        <!-- Login Form -->
+        <form id="loginForm" method="POST" action="{{ url_for('login') }}" class="hidden">
+            <div class="mb-4">
+                <label for="login-username" class="block text-sm font-medium text-gray-300 mb-2">Username</label>
+                <input type="text" id="login-username" name="username" required
+                       class="w-full px-3 py-2 bg-gray-700 text-white rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+            </div>
+            <div class="mb-6">
+                <label for="login-password" class="block text-sm font-medium text-gray-300 mb-2">Password</label>
+                <input type="password" id="login-password" name="password" required
+                       class="w-full px-3 py-2 bg-gray-700 text-white rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+            </div>
+            <button type="submit"
+                    class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded transition duration-300">
+                Log In
+            </button>
+        </form>
+
+        <!-- Signup Form -->
+        <form id="signupForm" method="POST" action="{{ url_for('signup') }}" class="hidden">
+            <div class="mb-4">
+                <label for="signup-username" class="block text-sm font-medium text-gray-300 mb-2">Username</label>
+                <input type="text" id="signup-username" name="username" required
+                       class="w-full px-3 py-2 bg-gray-700 text-white rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+            </div>
+            <div class="mb-6">
+                <label for="signup-password" class="block text-sm font-medium text-gray-300 mb-2">Password</label>
+                <input type="password" id="signup-password" name="password" required
+                       class="w-full px-3 py-2 bg-gray-700 text-white rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+            </div>
+            <button type="submit"
+                    class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded transition duration-300">
+                Sign Up
+            </button>
+        </form>
+    </div>
+</div>
+
+<script>
+    const loginTab = document.getElementById('loginTab');
+    const signupTab = document.getElementById('signupTab');
+    const loginForm = document.getElementById('loginForm');
+    const signupForm = document.getElementById('signupForm');
+
+    loginTab.addEventListener('click', () => {
+        loginTab.classList.remove('bg-gray-700');
+        loginTab.classList.add('bg-blue-600');
+        signupTab.classList.remove('bg-blue-600');
+        signupTab.classList.add('bg-gray-700');
+        loginForm.classList.remove('hidden');
+        signupForm.classList.add('hidden');
+    });
+
+    signupTab.addEventListener('click', () => {
+        signupTab.classList.remove('bg-gray-700');
+        signupTab.classList.add('bg-blue-600');
+        loginTab.classList.remove('bg-blue-600');
+        loginTab.classList.add('bg-gray-700');
+        signupForm.classList.remove('hidden');
+        loginForm.classList.add('hidden');
+    });
+
+    // Show login form by default
+    loginTab.click();
+</script>
+{% endblock %}
