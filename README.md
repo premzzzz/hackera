@@ -1,6 +1,9 @@
 ---
+#Team Monday
+-- kartikey Sapkal
+-- Nachiket Kulkarni
 
-# Debate App
+# Online Debate App
 ### Always check for updated branch or use Default branch
 
 ## Overview
@@ -20,22 +23,23 @@ Debate App is a web application built using Flask that allows users to engage in
 - **Langchain**: Library for natural language processing.
 - **Plotly**: Library for creating interactive graphs.
 - **PostgreSQL**: Relational database for data storage.
-- **Psycopg2**: PostgreSQL adapter for Python.
 - **Docker**: Containerization platform to run the application in isolated environments.
+- **Trivi**: Vulnerability scanning for docker containers.
+- **html/css/js** : Providing overall user experience 
 
 ## Screenshots
 
 ### User Interface
 
-| ![Home Page](images/home_page.png) | ![Register Page](images/register_page.png) |
+| ![Home Page](images/home_page.jpeg) | ![Register Page](images/register_page.jpeg) |
 |:----------------------------------:|:------------------------------------------:|
 | Home Page                           | Register Page                              |
 
 ### Debate Experience
 
-| ![Debate Page](images/debate_page.png) | ![Dashboard](images/dashboard.png) |
+| ![SingleUser](images/single_user_1_2.jpeg) | ![Multiuser](images/multi_user.jpeg) |
 |:--------------------------------------:|:---------------------------------:|
-| Debate Page                            | Dashboard                           |
+| AI v/s user Page                            | MultiUser Page                           |
 
 ## Setup Instructions
 
