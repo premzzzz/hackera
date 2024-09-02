@@ -1,4 +1,3 @@
-Here's an updated README with instructions for setting up Ollama with Llama 3.1 on your local machine:
 
 ---
 
@@ -281,4 +280,3 @@ This project is licensed under the MIT License. See the [LICENSE](LICENSE) file 
 
 ---
 
-Make sure to replace the image file names and paths with those that match your actual images and structure. You can place your images in a folder named `images` in the root of your repository.
