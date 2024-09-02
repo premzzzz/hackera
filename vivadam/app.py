@@ -114,7 +114,7 @@ def signup():
         with get_db_connection() as conn:
             with conn.cursor() as cursor:
                 cursor.execute(
-                    "SELECT 1 FROM users WHERE
+
                     "SELECT 1 FROM users WHERE username = %s",
                     (username,)
                 )
@@ -146,15 +146,12 @@ def login():
     try:
         with get_db_connection() as conn:
             with conn.cursor() as cursor:
-                cursor.execute(
-                    "SELECT id, password FROM users WHERE username = %s",
-                    (username,)
-                )
+                cursor.execute("SELECT id, password FROM users WHERE username = %s", (username,))
                 user = cursor.fetchone()
 
                 if user and check_password_hash(user[1], password):
                     session['username'] = username
-                    session['user_id'] = user[0]
+                    session['user_id'] = user[0]  # Store user_id in session
                     flash('Login successful!')
                     return redirect(url_for('dashboard'))
                 else:
@@ -165,6 +162,7 @@ def login():
         return redirect(url_for('register'))
 
 
+
 @app.route('/dashboard')
 def dashboard():
     if 'username' not in session:
@@ -173,45 +171,40 @@ def dashboard():
 
     username = session['username']
 
-    # Generate mock scores for demonstration
-    user_scores = [float(np.random.uniform(0, 10)) for _ in range(5)]
-    ai_scores = [float(np.random.uniform(0, 10)) for _ in range(5)]
+    try:
+        with get_db_connection() as conn:
+            with conn.cursor() as cursor:
+                # Fetch the latest debate scores for the user
+                cursor.execute("""
+                    SELECT user_scores, ai_scores, plot_json
+                    FROM debate_scores
+                    WHERE username = %s
+                    ORDER BY created_at DESC
+                    LIMIT 1
+                """, (username,))
 
-    # Calculate average scores
-    avg_user_score = sum(user_scores) / len(user_scores)
-    avg_ai_score = sum(ai_scores) / len(ai_scores)
+                result = cursor.fetchone()
 
-    # Calculate win rate (assuming a score > 5 is a win)
-    user_wins = sum(1 for score in user_scores if score > 5)
-    win_rate = (user_wins / len(user_scores)) * 100
+                if result:
+                    user_scores = result[0] or []
+                    ai_scores = result[1] or []
+                    plot_json = result[2] or json.dumps({})  # Fallback to empty JSON if plot_json is None
+                else:
+                    user_scores = []
+                    ai_scores = []
+                    plot_json = json.dumps({})
 
-    # Generate scatter plot
-    fig = go.Figure()
+                # Calculate average scores
+                avg_user_score = sum(user_scores) / len(user_scores) if user_scores else 0
+                avg_ai_score = sum(ai_scores) / len(ai_scores) if ai_scores else 0
 
-    fig.add_trace(go.Scatter(
-        x=list(range(1, len(user_scores) + 1)),
-        y=user_scores,
-        mode='markers',
-        name='User Scores',
-        marker=dict(size=10, color='blue', symbol='circle')
-    ))
+                # Calculate win rate (assuming a score > 5 is a win)
+                user_wins = sum(1 for score in user_scores if score > 5)
+                win_rate = (user_wins / len(user_scores)) * 100 if user_scores else 0
 
-    fig.add_trace(go.Scatter(
-        x=list(range(1, len(ai_scores) + 1)),
-        y=ai_scores,
-        mode='markers',
-        name='AI Scores',
-        marker=dict(size=10, color='red', symbol='diamond')
-    ))
-
-    fig.update_layout(
-        title='Debate Scores: User vs AI',
-        xaxis_title='Turn',
-        yaxis_title='Score',
-        yaxis=dict(range=[0, 10])
-    )
-
-    plot_json = json.dumps(fig, cls=plotly.utils.PlotlyJSONEncoder)
+    except psycopg2.Error as e:
+        flash(f"An error occurred while fetching dashboard data: {e.pgerror}")
+        return redirect(url_for('index'))
 
     return render_template('dashboard.html',
                            username=username,
@@ -219,6 +212,7 @@ def dashboard():
                            avg_ai_score=avg_ai_score,
                            win_rate=win_rate,
                            plot_json=plot_json)
+
 
 
 @app.route('/delete_account', methods=['POST'])
@@ -302,14 +296,9 @@ def end_debate():
 
     debate_history = session.get('debate_history', [])
 
-    # Simulate evaluation (replace with actual evaluation logic)
     user_scores = [float(np.random.uniform(0, 10)) for _ in range(len(debate_history) // 2)]
     ai_scores = [float(np.random.uniform(0, 10)) for _ in range(len(debate_history) // 2)]
 
-    logging.debug(f"Generated user_scores: {user_scores}")
-    logging.debug(f"Generated ai_scores: {ai_scores}")
-
-    # Generate scatter plot
     fig = go.Figure()
 
     fig.add_trace(go.Scatter(
@@ -325,38 +314,45 @@ def end_debate():
         y=ai_scores,
         mode='markers',
         name='AI Scores',
-        marker=dict(size=10, color='red', symbol='diamond')
+        marker=dict(size=10, color='red', symbol='x')
     ))
 
     fig.update_layout(
-        title='Debate Scores: User vs AI',
+        title='User vs AI Debate Scores',
         xaxis_title='Turn',
         yaxis_title='Score',
+        xaxis=dict(tickmode='linear'),
         yaxis=dict(range=[0, 10])
     )
 
     plot_json = json.dumps(fig, cls=plotly.utils.PlotlyJSONEncoder)
 
-    # Store scores in the database
     try:
         with get_db_connection() as conn:
             with conn.cursor() as cursor:
                 cursor.execute(
-                    "INSERT INTO debate_scores (user_id, user_scores, ai_scores, plot_json) VALUES (%s, %s, %s, %s)",
-                    (session['user_id'], user_scores, ai_scores, plot_json)
+                    "INSERT INTO debate_scores (username, average_fact_score, average_argument_score, plot_json, user_scores, ai_scores) "
+                    "VALUES (%s, %s, %s, %s, %s, %s)",
+                    (
+                        session['username'],  # Use username here
+                        sum(user_scores) / len(user_scores),
+                        sum(ai_scores) / len(ai_scores),
+                        plot_json,
+                        user_scores,
+                        ai_scores
+                    )
                 )
                 conn.commit()
-        logging.debug("Debate scores successfully saved to database")
     except psycopg2.Error as e:
-        logging.error(f"Database error while saving scores: {e.pgerror}")
-        flash(f"An error occurred while saving debate scores: {e.pgerror}")
+        logging.error(f"An error occurred while saving debate scores: {e.pgerror}")
+        flash('An error occurred while saving your debate scores.')
+        return redirect(url_for('index'))
 
-    # Clear session data
     session.pop('debate_topic', None)
     session.pop('debate_history', None)
 
-    # Redirect to dashboard
     return redirect(url_for('dashboard'))
+
 
 
 @app.route('/multi_user')
