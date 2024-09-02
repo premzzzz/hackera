@@ -57,8 +57,8 @@ Debate App is a web application built using Flask that allows users to engage in
 1. **Clone the Repository**
 
    ```bash
-   git clone https://github.com/yourusername/debate-app.git
-   cd debate-app
+   git clone git@github.com:potterheadk/hackera.git
+   cd hackera/vivadam 
    ```
 
 2. **Set Up Environment Variables**
@@ -139,6 +139,7 @@ Here's the updated section for setting up Ollama on Google Colab and exporting t
 ---
 
 ### Running Ollama on Google Colab with ngrok
+#### Use the T4 GPU for faster text generating.
 
 If you prefer to use Colab's GPU for running Ollama, you can expose it to your local machine using ngrok:
 
