@@ -10,11 +10,10 @@ import json
 import plotly
 import plotly.graph_objs as go
 import numpy as np
-import datetime
-import logging  # Add this line
+import logging
 
 # Set up logging
-
+logging.basicConfig(level=logging.DEBUG)
 
 app = Flask(__name__)
 
@@ -63,7 +62,7 @@ def initialize_database():
                     CREATE TABLE IF NOT EXISTS users (
                         id SERIAL PRIMARY KEY,
                         username VARCHAR(150) UNIQUE NOT NULL,
-                        password VARCHAR(255) NOT NULL
+                        password TEXT NOT NULL
                     )
                 """)
                 print("Users table is ready.")
@@ -72,33 +71,16 @@ def initialize_database():
                 cursor.execute("""
                     CREATE TABLE IF NOT EXISTS debate_scores (
                         id SERIAL PRIMARY KEY,
-                        username VARCHAR(255) NOT NULL,
-                        average_fact_score FLOAT NOT NULL,
-                        average_argument_score FLOAT NOT NULL,
-                        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+                        user_id INT REFERENCES users(id) ON DELETE CASCADE,
+                        average_fact_score REAL NOT NULL CHECK (average_fact_score BETWEEN 0 AND 10),
+                        average_argument_score REAL NOT NULL CHECK (average_argument_score BETWEEN 0 AND 10),
+                        created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+                        plot_json JSONB,
+                        user_scores REAL[],
+                        ai_scores REAL[]
                     )
                 """)
                 print("Debate scores table is ready.")
-
-                # Add columns if they do not exist
-                cursor.execute("""
-                    DO $$
-                    BEGIN
-                        IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='debate_scores' AND column_name='plot_json') THEN
-                            ALTER TABLE debate_scores ADD COLUMN plot_json TEXT;
-                        END IF;
-
-                        IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='debate_scores' AND column_name='user_scores') THEN
-                            ALTER TABLE debate_scores ADD COLUMN user_scores FLOAT[];
-                        END IF;
-
-                        IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='debate_scores' AND column_name='ai_scores') THEN
-                            ALTER TABLE debate_scores ADD COLUMN ai_scores FLOAT[];
-                        END IF;
-                    END
-                    $$;
-                """)
-                print("Columns have been added or verified.")
 
                 conn.commit()
                 print("Database tables and columns have been created or verified.")
@@ -132,6 +114,7 @@ def signup():
         with get_db_connection() as conn:
             with conn.cursor() as cursor:
                 cursor.execute(
+                    "SELECT 1 FROM users WHERE
                     "SELECT 1 FROM users WHERE username = %s",
                     (username,)
                 )
@@ -164,13 +147,14 @@ def login():
         with get_db_connection() as conn:
             with conn.cursor() as cursor:
                 cursor.execute(
-                    "SELECT password FROM users WHERE username = %s",
+                    "SELECT id, password FROM users WHERE username = %s",
                     (username,)
                 )
                 user = cursor.fetchone()
 
-                if user and check_password_hash(user[0], password):
+                if user and check_password_hash(user[1], password):
                     session['username'] = username
+                    session['user_id'] = user[0]
                     flash('Login successful!')
                     return redirect(url_for('dashboard'))
                 else:
@@ -240,13 +224,14 @@ def dashboard():
 @app.route('/delete_account', methods=['POST'])
 def delete_account():
     if 'username' in session:
-        username = session['username']
+        user_id = session['user_id']
         try:
             with get_db_connection() as conn:
                 with conn.cursor() as cursor:
-                    cursor.execute("DELETE FROM users WHERE username = %s", (username,))
+                    cursor.execute("DELETE FROM users WHERE id = %s", (user_id,))
                     conn.commit()
                     session.pop('username', None)
+                    session.pop('user_id', None)
                     flash('Your account has been deleted.')
                     return redirect(url_for('index'))
         except psycopg2.Error as e:
@@ -260,6 +245,7 @@ def delete_account():
 @app.route('/logout')
 def logout():
     session.pop('username', None)
+    session.pop('user_id', None)
     flash('You have been logged out.')
     return redirect(url_for('index'))
 
@@ -356,8 +342,8 @@ def end_debate():
         with get_db_connection() as conn:
             with conn.cursor() as cursor:
                 cursor.execute(
-                    "INSERT INTO debate_scores (username, user_scores, ai_scores, plot_json) VALUES (%s, %s, %s, %s)",
-                    (session['username'], user_scores, ai_scores, plot_json)
+                    "INSERT INTO debate_scores (user_id, user_scores, ai_scores, plot_json) VALUES (%s, %s, %s, %s)",
+                    (session['user_id'], user_scores, ai_scores, plot_json)
                 )
                 conn.commit()
         logging.debug("Debate scores successfully saved to database")
@@ -400,35 +386,17 @@ def evaluate_debate():
     # Create a prompt for the AI to evaluate the debate
     evaluation_prompt = PromptTemplate(
         input_variables=["topic", "debate_history"],
-        template="""
-        As an AI debate moderator, evaluate the following debate on the topic of {topic}.
+        template="""Evaluate the following debate on the topic "{topic}":
+{debate_history}
 
-        Debate history:
-        {debate_history}
-
-        Please provide a brief evaluation of the debate so far, considering:
-        1. The strength and relevance of arguments from both sides.
-        2. The overall quality of the discourse.
-        3. Any suggestions for improvement or areas that could be explored further.
-
-        Limit your response to 2-3 sentences.
-
-        Your evaluation:
-        """
+Provide a score for both participants and a brief commentary on their performance.
+"""
     )
+    evaluation_chain = LLMChain(llm=ollama, prompt=evaluation_prompt)
 
-    # Use the LLMChain to generate the evaluation
-    evaluation_chain = LLMChain(llm=llm, prompt=evaluation_prompt)
-    evaluation = evaluation_chain.invoke(
-        input={
-            "topic": topic,
-            "debate_history": formatted_history
-        }
-    )['text'].strip()
+    result = evaluation_chain.invoke(input={"topic": topic, "debate_history": formatted_history})
 
-    return jsonify({'evaluation': evaluation})
+    return jsonify({'evaluation': result['text'].strip()})
 
-
-if __name__ == '__main__':
-    initialize_database()
-    app.run(debug=True)
+if __name__ == "__main__":
+    app.run(host="0.0.0.0", port=5000, debug=True)
