@@ -1,10 +1,14 @@
+Here's an updated README with instructions for setting up Ollama with Llama 3.1 on your local machine:
+
 ---
-#Team Monday
--- kartikey Sapkal
--- Nachiket Kulkarni
+
+# Team Monday
+- **Kartikey Sapkal**
+- **Nachiket Kulkarni**
 
 # Online Debate App
-### Always check for updated branch or use Default branch
+
+### Always check for the updated branch or use the default branch
 
 ## Overview
 
@@ -25,7 +29,7 @@ Debate App is a web application built using Flask that allows users to engage in
 - **PostgreSQL**: Relational database for data storage.
 - **Docker**: Containerization platform to run the application in isolated environments.
 - **Trivi**: Vulnerability scanning for docker containers.
-- **html/css/js** : Providing overall user experience 
+- **HTML/CSS/JS**: Providing overall user experience.
 
 ## Screenshots
 
@@ -39,11 +43,11 @@ Debate App is a web application built using Flask that allows users to engage in
 
 | ![SingleUser](images/single_user_1_2.jpeg) | ![Multiuser](images/multi_user.jpeg) |
 |:--------------------------------------:|:---------------------------------:|
-| AI v/s user Page                            | MultiUser Page                           |
+| AI vs User Page                            | Multi-User Page                           |
 
 | ![Dashboard](images/dashboard_page.jpeg) | 
-#### Dashboard
-
+|:--------------------------------------:|
+| Dashboard                              |
 
 ## Setup Instructions
 
@@ -52,6 +56,7 @@ Debate App is a web application built using Flask that allows users to engage in
 - Python 3.x
 - PostgreSQL
 - Docker (for containerized setup)
+- Ollama with Llama 3.1 (for AI debates)
 
 ### Installation
 
@@ -102,6 +107,38 @@ Debate App is a web application built using Flask that allows users to engage in
    ```
 
    The application will be available at `http://127.0.0.1:5000`.
+
+### Ollama Setup with Llama 3.1 on Local Machine
+
+1. **Install Ollama**
+
+   Download and install Ollama on your local machine from [Ollama's official website](https://ollama.com).
+
+2. **Download the Llama 3.1 Model**
+
+   After installing Ollama, download the Llama 3.1 model by running:
+
+   ```bash
+   ollama pull llama3.1
+   ```
+
+3. **Start Ollama Service**
+
+   Run the Ollama service on your local machine:
+
+   ```bash
+   ollama serve --model llama3.1
+   ```
+
+   This will start the Ollama service and make it accessible on `http://localhost:11434`.
+
+4. **Configure Flask App to Use Ollama**
+
+   Ensure your Flask application is configured to interact with the Ollama service running on your local machine. Update the `.env` file with the following variable if required:
+
+   ```env
+   OLLAMA_ENDPOINT=http://localhost:11434
+   ```
 
 ### Docker Setup
 
@@ -233,8 +270,6 @@ If you prefer to run the application using Docker, follow these steps:
 4. **View Dashboard**
 
    Access `/dashboard` to see your debate scores and performance metrics.
-
-
 
 ## Contributing
 
