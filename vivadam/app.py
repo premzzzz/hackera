@@ -11,6 +11,8 @@ import plotly
 import plotly.graph_objs as go
 import numpy as np
 import logging
+import requests
+
 
 # Set up logging
 logging.basicConfig(level=logging.DEBUG)
@@ -86,6 +88,25 @@ def initialize_database():
                 print("Database tables and columns have been created or verified.")
     except psycopg2.Error as e:
         print(f"An error occurred while initializing the database: {e.pgerror}")
+
+
+
+def generate_response_with_ngrok(prompt, model="llama3.1"):
+    url = "https://3714-34-168-163-150.ngrok-free.app/api/generate"  # Replace with your ngrok URL
+    headers = {"Content-Type": "application/json"}
+    data = {
+        "model": model,
+        "prompt": prompt
+    }
+
+    response = requests.post(url, headers=headers, json=data)
+
+    if response.status_code == 200:
+        # Combine all the 'response' parts from the JSON response
+        responses = [json.loads(line)['response'] for line in response.text.strip().splitlines()]
+        return "".join(responses)
+    else:
+        raise Exception(f"Failed to generate response: {response.status_code} - {response.text}")
 
 
 # Routes
@@ -270,14 +291,14 @@ def debate():
         debate_history = session.get('debate_history', [])
         debate_history.append(("User", user_input))
 
-        # Generate AI response
-        ai_response = debate_chain.invoke(
-            input={
-                "topic": session['debate_topic'],
-                "debate_history": "\n".join([f"{speaker}: {text}" for speaker, text in debate_history]),
-                "user_input": user_input
-            }
-        )['text'].strip()
+        # Generate AI response using the ngrok API
+        try:
+            ai_response = generate_response_with_ngrok(
+                prompt=f"Topic: {session['debate_topic']}\nDebate History:\n{''.join([f'{speaker}: {text}\n' for speaker, text in debate_history])}\nUser: {user_input}"
+            )
+        except Exception as e:
+            flash(f"An error occurred while generating a response: {str(e)}")
+            return redirect(url_for('index'))
 
         debate_history.append(("AI", ai_response))
         session['debate_history'] = debate_history
@@ -286,6 +307,7 @@ def debate():
 
     return render_template('debate.html', username=session['username'], topic=session['debate_topic'],
                            debate_history=session.get('debate_history', []))
+
 
 
 @app.route('/end_debate', methods=['POST'])
