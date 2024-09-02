@@ -15,7 +15,7 @@ import requests
 
 
 # Set up logging
-logging.basicConfig(level=logging.DEBUG)
+# logging.basicConfig(level=logging.DEBUG)
 
 app = Flask(__name__)
 
@@ -92,7 +92,7 @@ def initialize_database():
 
 
 def generate_response_with_ngrok(prompt, model="llama3.1"):
-    url = "https://3714-34-168-163-150.ngrok-free.app/api/generate"  # Replace with your ngrok URL
+    url = "https://2944-34-168-163-150.ngrok-free.app/api/generate"  # Replace with your ngrok URL
     headers = {"Content-Type": "application/json"}
     data = {
         "model": model,
@@ -291,14 +291,14 @@ def debate():
         debate_history = session.get('debate_history', [])
         debate_history.append(("User", user_input))
 
-        # Generate AI response using the ngrok API
-        try:
-            ai_response = generate_response_with_ngrok(
-                prompt=f"Topic: {session['debate_topic']}\nDebate History:\n{''.join([f'{speaker}: {text}\n' for speaker, text in debate_history])}\nUser: {user_input}"
-            )
-        except Exception as e:
-            flash(f"An error occurred while generating a response: {str(e)}")
-            return redirect(url_for('index'))
+        # Generate AI response
+        ai_response = debate_chain.invoke(
+            input={
+                "topic": session['debate_topic'],
+                "debate_history": "\n".join([f"{speaker}: {text}" for speaker, text in debate_history]),
+                "user_input": user_input
+            }
+        )['text'].strip()
 
         debate_history.append(("AI", ai_response))
         session['debate_history'] = debate_history
@@ -307,7 +307,6 @@ def debate():
 
     return render_template('debate.html', username=session['username'], topic=session['debate_topic'],
                            debate_history=session.get('debate_history', []))
-
 
 
 @app.route('/end_debate', methods=['POST'])
@@ -410,7 +409,7 @@ def evaluate_debate():
 Provide a score for both participants and a brief commentary on their performance.
 """
     )
-    evaluation_chain = LLMChain(llm=ollama, prompt=evaluation_prompt)
+    evaluation_chain = LLMChain(llm=llm, prompt=evaluation_prompt)
 
     result = evaluation_chain.invoke(input={"topic": topic, "debate_history": formatted_history})
 
